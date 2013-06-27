@@ -1,0 +1,19 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile 'com.google.code.gson:gson:2.2.2',
+          'org.apache.httpcomponents:httpcore:4.2.4',
+          'org.apache.httpcomponents:httpclient:4.2.4'
+
+  testCompile 'junit:junit:4+',
+              'org.mockito:mockito-all:1.9.5'
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '1.6'
+}
