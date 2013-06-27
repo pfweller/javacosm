@@ -77,7 +77,7 @@ public class JavacosmTest {
             .get(0).getMostRecentUpdate().getMicrocosmId());
   }
 
-  @Test
+  /* @Test
   public void microcosm_meta_has_correct_creation_time() {
     Date date = mock(Date.class);
     Microcosm.Meta microcosmMeta = mock(Microcosm.Meta.class);
@@ -86,7 +86,7 @@ public class JavacosmTest {
     assertEquals("Microcosm has correct creation date in the metadata",
         microcosmMeta.getCreated().toString(), microcosms.get(0)
             .getMeta().getCreated().toString());
-  }
+  } */
 
   @Test
   public void microcosm_meta_has_correct_creator() {
