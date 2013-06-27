@@ -9,7 +9,6 @@ import java.util.List;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -21,69 +20,56 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
 import eu.pfweller.javacosm.microcosm.Microcosm;
+import eu.pfweller.javacosm.site.Site;
+import eu.pfweller.javacosm.site.SiteNotFoundException;
 
 public class Javacosm {
+  public static final String SITE = "/api/v1/site";
 
-/*  public static Site getSite(String url) {
+  public static Site getSite(String baseUrl) throws SiteNotFoundException, IOException {
     StringBuilder builder = new StringBuilder();
     HttpClient client = new DefaultHttpClient();
-    HttpGet getSite = new HttpGet(url);
+    HttpGet getSite = new HttpGet(baseUrl + SITE);
 
-    try {
-      HttpResponse response = client.execute(getSite);
-      StatusLine statusLine = response.getStatusLine();
-      int statusCode = statusLine.getStatusCode();
-      if (statusCode == 200) {
-        HttpEntity entity = response.getEntity();
-        InputStream content = entity.getContent();
-        BufferedReader reader = new BufferedReader(
-            new InputStreamReader(content));
-        String line;
+    HttpResponse response = client.execute(getSite);
+    StatusLine statusLine = response.getStatusLine();
+    int statusCode = statusLine.getStatusCode();
 
-        while ((line = reader.readLine()) != null) {
-          builder.append(line);
-        }
-      } else {
-        System.out.println("Failed to get site information");
+    if (statusCode == 200) {
+      HttpEntity entity = response.getEntity();
+      InputStream content = entity.getContent();
+      BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+      String line;
+
+      while ((line = reader.readLine()) != null) {
+        builder.append(line);
       }
-    } catch (ClientProtocolException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+    } else if (statusCode == 400) {
+      throw new SiteNotFoundException("Could not find site at: " + baseUrl);
     }
-  }*/
 
-  public static List<Microcosm> getMicrocosms(/* Site site*/) {
-    //String url = Site.getDomain() + Site.getLinks().getRel("microcosm");
+    JsonParser parser = new JsonParser();
+    JsonObject object = parser.parse(builder.toString()).getAsJsonObject();
+    String siteJson = object.getAsJsonObject("data").toString();
+
+    Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").create();
+    return gson.fromJson(siteJson, Site.class);
+  }
+
+  public static List<Microcosm> getMicrocosms(Site site) throws LinkNotFoundException, IOException {
+    String url = site.getDomain() + site.getMeta().getLink("microcosm").getHref();
     StringBuilder builder = new StringBuilder();
     HttpClient client = new DefaultHttpClient();
-    HttpGet getMicrocosms = new HttpGet("http://www.mocky.io/v2/5186c569cf096b8c025cb3b1");
+    HttpGet getMicrocosms = new HttpGet(url);
 
-    try {
-      HttpResponse response = client.execute(getMicrocosms);
-      StatusLine statusLine = response.getStatusLine();
-      int statusCode = statusLine.getStatusCode();
-      if (statusCode == 200) {
-        HttpEntity entity = response.getEntity();
-        InputStream content = entity.getContent();
-        BufferedReader reader = new BufferedReader(
-            new InputStreamReader(content));
-        String line;
+    HttpResponse response = client.execute(getMicrocosms);
+    HttpEntity entity = response.getEntity();
+    InputStream content = entity.getContent();
+    BufferedReader reader = new BufferedReader(new InputStreamReader(content));
+    String line;
 
-        while ((line = reader.readLine()) != null) {
-          builder.append(line);
-        }
-      } else {
-        System.out.println("Failed to get Microcosms");
-      }
-    } catch (ClientProtocolException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+    while ((line = reader.readLine()) != null) {
+      builder.append(line);
     }
 
     JsonParser parser = new JsonParser();
@@ -91,9 +77,7 @@ public class Javacosm {
     String microcosmJson = object.getAsJsonObject("data").getAsJsonObject("microcosms").getAsJsonArray("items").toString();
 
     Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").create();
-    List<Microcosm> microcosms = gson.fromJson(microcosmJson,
-        new TypeToken<List<Microcosm>>() {
-        }.getType());
-    return microcosms;
+    return gson.fromJson(microcosmJson, new TypeToken<List<Microcosm>>() {
+    }.getType());
   }
 }

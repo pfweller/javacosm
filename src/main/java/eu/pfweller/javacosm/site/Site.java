@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import eu.pfweller.javacosm.Link;
+import eu.pfweller.javacosm.LinkNotFoundException;
 import eu.pfweller.javacosm.Permissions;
 import eu.pfweller.javacosm.user.User;
 
@@ -201,6 +202,16 @@ public class Site {
      */
     public void setLinks(List<Link> links) {
       this.links = links;
+    }
+
+    public Link getLink(String rel) throws LinkNotFoundException {
+      for (Link link : getLinks()) {
+        if (link.getRel().equals(rel)) {
+          return link;
+        }
+      }
+
+      throw new LinkNotFoundException("Could not find link for: " + rel);
     }
   }
 }
